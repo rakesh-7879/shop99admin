@@ -22,17 +22,24 @@ import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.webkit.MimeTypeMap;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
+import android.widget.Spinner;
 import android.widget.Toast;
 
+import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.android.gms.tasks.Task;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.QueryDocumentSnapshot;
+import com.google.firebase.firestore.QuerySnapshot;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.OnProgressListener;
 import com.google.firebase.storage.StorageReference;
@@ -43,14 +50,16 @@ import com.rakesh.shop99.shop99admin.fragment.ProductFragment;
 import com.rakesh.shop99.shop99admin.R;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public class NavigationActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener {
-    RelativeLayout add_cateogry_view,add_subcateogry_view;
+    RelativeLayout add_cateogry_view,add_subcateogry_view,add_product_view;
+    Spinner categoryForSubcategory,categoryForProducat;
     boolean isFABOpen=false;
-    FloatingActionButton fab1,fab2;
-//    FloatingActionButton fab3;
+    FloatingActionButton fab1,fab2,fab3;
     Button chooseCategory, uploadCategory,resetCategory,submitCategory;
     EditText categoryName;
     ImageView categoryImage;
@@ -70,10 +79,13 @@ public class NavigationActivity extends AppCompatActivity implements NavigationV
 
         add_cateogry_view=(RelativeLayout)findViewById(R.id.add_category_view);
         add_subcateogry_view=(RelativeLayout)findViewById(R.id.add_subcategory_view);
+        add_product_view=(RelativeLayout)findViewById(R.id.add_product_view);
+        categoryForSubcategory=(Spinner)findViewById(R.id.spinner);
+        categoryForProducat=(Spinner)findViewById(R.id.spinner1);
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
         fab1 = (FloatingActionButton) findViewById(R.id.fab1);
         fab2 = (FloatingActionButton) findViewById(R.id.fab2);
-//        fab3 = (FloatingActionButton) findViewById(R.id.fab3);
+        fab3 = (FloatingActionButton) findViewById(R.id.fab3);
         chooseCategory = (Button)findViewById(R.id.button);
         uploadCategory = (Button)findViewById(R.id.button2);
         submitCategory=(Button)findViewById(R.id.button3);
@@ -111,11 +123,25 @@ public class NavigationActivity extends AppCompatActivity implements NavigationV
         fab2.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                getCategory(categoryForSubcategory);
                 add_subcateogry_view.setVisibility(View.VISIBLE);
                 add_subcateogry_view.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
                         add_subcateogry_view.setVisibility(View.GONE);
+                    }
+                });
+            }
+        });
+        fab3.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                getCategory(categoryForProducat);
+                add_product_view.setVisibility(View.VISIBLE);
+                add_product_view.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        add_product_view.setVisibility(View.GONE);
                     }
                 });
             }
@@ -187,6 +213,18 @@ public class NavigationActivity extends AppCompatActivity implements NavigationV
                 lastUploadedImagePath="";
             }
         });
+        categoryForProducat.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                Toast.makeText(getApplicationContext(),position+" ",Toast.LENGTH_SHORT).show();
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> parent) {
+
+            }
+        });
+
 
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
@@ -204,14 +242,14 @@ public class NavigationActivity extends AppCompatActivity implements NavigationV
         isFABOpen=true;
         fab1.animate().translationY(-getResources().getDimension(R.dimen.standard_55));
         fab2.animate().translationY(-getResources().getDimension(R.dimen.standard_105));
-//        fab3.animate().translationY(-getResources().getDimension(R.dimen.standard_155));
+        fab3.animate().translationY(-getResources().getDimension(R.dimen.standard_155));
     }
 
     private void closeFABMenu(){
         isFABOpen=false;
         fab1.animate().translationY(0);
         fab2.animate().translationY(0);
-//        fab3.animate().translationY(0);
+        fab3.animate().translationY(0);
     }
 
     @Override
@@ -360,5 +398,27 @@ public class NavigationActivity extends AppCompatActivity implements NavigationV
         // Returning the file Extension.
         return mimeTypeMap.getExtensionFromMimeType(contentResolver.getType(uri)) ;
 
+    }
+    public boolean getCategory(Spinner spinner){
+        final List<String> categoryList=new ArrayList<String>();
+        final ArrayAdapter<String> categoryAdapter=new ArrayAdapter<String>(getApplicationContext(),R.layout.spinner_textview,categoryList);
+        db.collection("category")
+                .get()
+                .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+                    @Override
+                    public void onComplete(@NonNull Task<QuerySnapshot> task) {
+                        if(task.isSuccessful()){
+                            for(QueryDocumentSnapshot document : task.getResult()){
+                                categoryList.add(document.getData().get("name").toString());
+                            }
+                            categoryAdapter.notifyDataSetChanged();
+                        }
+                    }
+                });
+
+        categoryAdapter.setDropDownViewResource(R.layout.spinner_textview);
+        spinner.setAdapter(categoryAdapter);
+
+        return false;
     }
 }

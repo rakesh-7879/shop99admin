@@ -25,13 +25,13 @@
     <include layout="@layout/content_main" />
 
 
-    <!--<android.support.design.widget.FloatingActionButton-->
-        <!--android:id="@+id/fab3"-->
-        <!--android:layout_width="45dp"-->
-        <!--android:layout_height="45dp"-->
-        <!--android:layout_gravity="bottom|end"-->
-        <!--android:layout_margin="24dp"-->
-        <!--app:srcCompat="@android:drawable/ic_btn_speak_now" />-->
+    <android.support.design.widget.FloatingActionButton
+        android:id="@+id/fab3"
+        android:layout_width="45dp"
+        android:layout_height="45dp"
+        android:layout_gravity="bottom|end"
+        android:layout_margin="24dp"
+        app:srcCompat="@android:drawable/ic_btn_speak_now" />
 
     <android.support.design.widget.FloatingActionButton
         android:id="@+id/fab2"
